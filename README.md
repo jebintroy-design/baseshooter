@@ -1,36 +1,21 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Baseshooter
 
-## Getting Started
+One miss and you're out.
 
-First, run the development server:
+Baseshooter is a precision knife-throw arcade game on Base. Pick a mode, time your throws at the spinning apple wheel, and land every blade without a single miss. Clear a run to lock your score onto the onchain leaderboard. Three modes, three, five, and ten knives, each faster than the last.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## How it works
+- Tap or press Space to throw a knife at the spinning wheel of apples.
+- Land every knife in an apple. Hit the bare wheel and the run is over.
+- Starting a round and submitting a score are onchain actions on Base.
+- Cleared and submitted runs appear on the onchain leaderboard.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Stack
+- Next.js (App Router), TypeScript, Tailwind
+- wagmi, viem, Base Account
+- Canvas 2D game, framer-motion UI
+- Base mainnet (chainId 8453)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Onchain
+- Leaderboard contract: 0xa3cd7518a1b9dafc3fc044bda57b7e735bf75770 (Base mainnet)
+- Scores are recorded via the ScoreSubmitted event and ranked per mode.
