@@ -49,10 +49,10 @@ body {
 @keyframes bs-particle {
   0% { transform: translate3d(0, 0, 0); opacity: 0; }
   10% { opacity: var(--bs-peak, 0.7); }
-  30% { transform: translate3d(calc(var(--bs-sway, 0) * 1px), -25vh, 0); opacity: var(--bs-peak, 0.7); }
-  55% { transform: translate3d(0, -55vh, 0); opacity: var(--bs-peak, 0.7); }
-  80% { transform: translate3d(calc(var(--bs-sway, 0) * -1px), -85vh, 0); opacity: calc(var(--bs-peak, 0.7) * 0.55); }
-  100% { transform: translate3d(0, -120vh, 0); opacity: 0; }
+  30% { transform: translate3d(calc(var(--bs-sway, 0) * 1px), -25svh, 0); opacity: var(--bs-peak, 0.7); }
+  55% { transform: translate3d(0, -55svh, 0); opacity: var(--bs-peak, 0.7); }
+  80% { transform: translate3d(calc(var(--bs-sway, 0) * -1px), -85svh, 0); opacity: calc(var(--bs-peak, 0.7) * 0.55); }
+  100% { transform: translate3d(0, -120svh, 0); opacity: 0; }
 }
 
 @keyframes bs-grid-scroll {

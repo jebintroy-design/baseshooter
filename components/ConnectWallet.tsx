@@ -3,8 +3,10 @@
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 
-function truncate(address: string) {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+function truncate(address: string, short = false) {
+  return short
+    ? `${address.slice(0, 4)}...${address.slice(-3)}`
+    : `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
 export function ConnectWallet() {
@@ -25,12 +27,11 @@ export function ConnectWallet() {
   if (isConnected && address) {
     return (
       <motion.div
-        layout
         whileHover={reduce ? undefined : { y: -1, scale: 1.02 }}
         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-        className="inline-flex items-center gap-2 rounded-full border border-[#0052FF]/40 bg-[#0052FF]/10 px-3 py-1.5 text-sm shadow-[0_4px_18px_-8px_rgba(0,82,255,0.6)]"
+        className="inline-flex max-w-full shrink items-center gap-1.5 rounded-full border border-[#0052FF]/40 bg-[#0052FF]/10 px-2.5 py-1 text-xs shadow-[0_4px_18px_-8px_rgba(0,82,255,0.6)] sm:gap-2 sm:px-3 sm:py-1.5 sm:text-sm"
       >
-        <span className="relative inline-flex h-2 w-2">
+        <span className="relative inline-flex h-2 w-2 shrink-0">
           <motion.span
             aria-hidden
             className="absolute inset-0 rounded-full bg-[#3effa2]"
@@ -39,12 +40,15 @@ export function ConnectWallet() {
           />
           <span className="relative inline-block h-2 w-2 rounded-full bg-[#3effa2]" />
         </span>
-        <span className="font-mono text-[#cbd9ff]">{truncate(address)}</span>
+        <span className="hidden font-mono text-[#cbd9ff] sm:inline">{truncate(address)}</span>
+        <span className="font-mono text-[#cbd9ff] sm:hidden">{truncate(address, true)}</span>
         <button
           onClick={() => disconnect()}
-          className="rounded-full bg-white/10 px-3 py-0.5 text-xs text-white transition hover:bg-white/20 active:scale-95"
+          aria-label="Disconnect"
+          className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white transition hover:bg-white/20 active:scale-95 sm:px-3 sm:text-xs"
         >
-          Disconnect
+          <span className="hidden sm:inline">Disconnect</span>
+          <span aria-hidden className="sm:hidden">×</span>
         </button>
       </motion.div>
     );

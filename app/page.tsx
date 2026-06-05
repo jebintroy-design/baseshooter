@@ -6,9 +6,13 @@ import { Leaderboard } from '@/components/Leaderboard';
 export default function Home() {
   return (
     <main className="relative mx-auto flex w-full max-w-[460px] flex-col gap-6 px-4 pb-16 pt-6">
-      <header className="flex items-center justify-between">
-        <Wordmark />
-        <ConnectWallet />
+      <header className="flex min-w-0 items-center justify-between gap-2">
+        <div className="min-w-0 shrink">
+          <Wordmark />
+        </div>
+        <div className="shrink-0">
+          <ConnectWallet />
+        </div>
       </header>
 
       <BaseshooterGame />

@@ -5,7 +5,11 @@ import { motion, useReducedMotion } from 'motion/react';
 export function Wordmark({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
   const reduce = useReducedMotion();
   const cls =
-    size === 'lg' ? 'text-4xl' : size === 'sm' ? 'text-lg' : 'text-2xl';
+    size === 'lg'
+      ? 'text-3xl sm:text-4xl'
+      : size === 'sm'
+        ? 'text-base sm:text-lg'
+        : 'text-xl sm:text-2xl';
   return (
     <h1 className={`relative inline-flex select-none items-baseline font-bold tracking-tight ${cls}`}>
       <span className="text-white drop-shadow-[0_0_18px_rgba(0,82,255,0.45)]">Base</span>

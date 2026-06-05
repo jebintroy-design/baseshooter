@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, type CSSProperties } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useReducedMotion } from 'motion/react';
 import { usePlayState } from './PlayStateProvider';
 
@@ -27,21 +27,19 @@ function makeParticles(count: number, seed = 1337): Particle[] {
   const r = rng(seed);
   const out: Particle[] = [];
   for (let i = 0; i < count; i++) {
-    // 3 parallax layers via size buckets.
     const layer = r();
     const size = layer < 0.55 ? 1 + r() * 1.2 : layer < 0.88 ? 1.6 + r() * 1.6 : 2.4 + r() * 2.4;
-    // bigger dots drift slower (parallax).
     const duration = size < 1.8 ? 18 + r() * 10 : size < 3 ? 24 + r() * 12 : 30 + r() * 16;
     const hueRoll = r();
     const hue: Particle['hue'] = hueRoll < 0.6 ? 'white' : hueRoll < 0.85 ? 'blue' : 'red';
     out.push({
       left: r() * 100,
-      top: 60 + r() * 80, // start in lower half / off-bottom, drift up
+      top: 60 + r() * 80,
       size,
       sway: (20 + r() * 40) * (r() < 0.5 ? 1 : -1),
       peak: 0.45 + r() * 0.5,
       duration,
-      delay: -r() * duration, // mid-cycle start so the field is alive immediately
+      delay: -r() * duration,
       hue,
     });
   }
@@ -50,24 +48,47 @@ function makeParticles(count: number, seed = 1337): Particle[] {
 
 const PARTICLE_POOL = makeParticles(60, 1337);
 
+function useIsMobile() {
+  // Defaults to false on the server so SSR/CSR markup matches; updates after mount.
+  const [mobile, setMobile] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('matchMedia' in window)) return;
+    const mq = window.matchMedia('(max-width: 640px)');
+    const apply = () => setMobile(mq.matches);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
+  return mobile;
+}
+
 export function Background() {
   const reduce = useReducedMotion();
   const { isPlaying } = usePlayState();
+  const isMobile = useIsMobile();
 
-  // Particles: full field idle, halved while playing, sparse static in reduced motion.
   const visibleParticles = useMemo(() => {
-    if (reduce) return PARTICLE_POOL.slice(0, 28);
-    return isPlaying ? PARTICLE_POOL.slice(0, 22) : PARTICLE_POOL;
-  }, [reduce, isPlaying]);
+    if (reduce) return PARTICLE_POOL.slice(0, isMobile ? 16 : 28);
+    if (isPlaying) return PARTICLE_POOL.slice(0, isMobile ? 12 : 22);
+    return PARTICLE_POOL.slice(0, isMobile ? 24 : 60);
+  }, [reduce, isPlaying, isMobile]);
 
+  const blur = isMobile ? 28 : 60;
+
+  // On mobile, mix-blend-mode: screen combined with blurred fixed layers is the
+  // main culprit for flickering / repaint glitches in iOS Safari and some
+  // Android browsers. Drop the blend mode on mobile and rely on plain alpha.
   const auroraWrapStyle: CSSProperties = {
-    mixBlendMode: 'screen',
-    opacity: isPlaying ? 0.55 : 1,
+    mixBlendMode: isMobile ? undefined : 'screen',
+    opacity: isPlaying ? 0.55 : isMobile ? 0.9 : 1,
     transition: 'opacity 600ms ease',
   };
 
-  const wheelDuration = isPlaying ? '260s' : '90s';
-  const gridDuration = isPlaying ? '22s' : '7s';
+  const wheelDuration = isPlaying ? '260s' : isMobile ? '140s' : '90s';
+  const gridDuration = isPlaying ? '22s' : isMobile ? '14s' : '7s';
+  const wheelOpacity = isPlaying ? 0.05 : isMobile ? 0.07 : 0.09;
+  const gridOpacity = isPlaying ? 0.45 : isMobile ? 0.55 : 0.75;
+  const gridHeight = isMobile ? '38svh' : '46svh';
 
   return (
     <div
@@ -84,17 +105,18 @@ export function Background() {
         }}
       />
 
-      {/* 2. Aurora blobs */}
+      {/* 2. Aurora blobs. Sized in svh so URL bar collapse on mobile does not jump them. */}
       <div className="absolute inset-0" style={auroraWrapStyle}>
         <AuroraBlob
           name="bs-aurora-1"
           duration="22s"
           animate={!reduce}
+          blur={blur}
           style={{
-            top: '-22vh',
+            top: '-22svh',
             left: '-18vw',
-            width: '85vh',
-            height: '85vh',
+            width: '85svh',
+            height: '85svh',
             background:
               'radial-gradient(closest-side, rgba(0,82,255,0.85), rgba(0,82,255,0) 70%)',
           }}
@@ -103,11 +125,12 @@ export function Background() {
           name="bs-aurora-2"
           duration="28s"
           animate={!reduce}
+          blur={blur}
           style={{
-            top: '18vh',
+            top: '18svh',
             right: '-22vw',
-            width: '75vh',
-            height: '75vh',
+            width: '75svh',
+            height: '75svh',
             background:
               'radial-gradient(closest-side, rgba(255,77,77,0.75), rgba(255,77,77,0) 70%)',
           }}
@@ -116,40 +139,45 @@ export function Background() {
           name="bs-aurora-3"
           duration="34s"
           animate={!reduce}
+          blur={blur}
           style={{
-            bottom: '-40vh',
+            bottom: '-40svh',
             left: '50%',
-            marginLeft: '-55vh',
-            width: '110vh',
-            height: '110vh',
+            marginLeft: '-55svh',
+            width: '110svh',
+            height: '110svh',
             background:
               'radial-gradient(closest-side, rgba(26,102,255,0.8), rgba(26,102,255,0) 65%)',
           }}
         />
-        <AuroraBlob
-          name="bs-aurora-4"
-          duration="40s"
-          animate={!reduce}
-          style={{
-            top: '-12vh',
-            right: '4vw',
-            width: '55vh',
-            height: '55vh',
-            background:
-              'radial-gradient(closest-side, rgba(255,109,109,0.7), rgba(255,109,109,0) 70%)',
-          }}
-        />
+        {/* The 4th blob is decorative. Skip on mobile to cut GPU work. */}
+        {!isMobile ? (
+          <AuroraBlob
+            name="bs-aurora-4"
+            duration="40s"
+            animate={!reduce}
+            blur={blur}
+            style={{
+              top: '-12svh',
+              right: '4vw',
+              width: '55svh',
+              height: '55svh',
+              background:
+                'radial-gradient(closest-side, rgba(255,109,109,0.7), rgba(255,109,109,0) 70%)',
+            }}
+          />
+        ) : null}
       </div>
 
-      {/* 3. Wheel silhouette (ambient brand texture) */}
+      {/* 3. Wheel silhouette */}
       <div
         className="absolute"
         style={{
           left: '50%',
           top: '36%',
-          width: '170vmin',
-          height: '170vmin',
-          opacity: isPlaying ? 0.05 : 0.09,
+          width: isMobile ? '140vmin' : '170vmin',
+          height: isMobile ? '140vmin' : '170vmin',
+          opacity: wheelOpacity,
           transition: 'opacity 600ms ease',
           animationName: reduce ? 'none' : 'bs-wheel-rot',
           animationDuration: wheelDuration,
@@ -185,7 +213,7 @@ export function Background() {
             height: p.size,
             borderRadius: '999px',
             background: color,
-            boxShadow: glow,
+            boxShadow: isMobile ? undefined : glow,
             opacity: reduce ? p.peak * 0.55 : 0,
             animationName: reduce ? 'none' : 'bs-particle',
             animationDuration: `${p.duration}s`,
@@ -203,9 +231,8 @@ export function Background() {
       {/* 5. Synthwave depth grid */}
       <div
         className="absolute bottom-0 left-0 right-0 overflow-hidden"
-        style={{ height: '46vh', opacity: isPlaying ? 0.45 : 0.75, transition: 'opacity 600ms ease' }}
+        style={{ height: gridHeight, opacity: gridOpacity, transition: 'opacity 600ms ease' }}
       >
-        {/* Tilted grid plane */}
         <div
           className="absolute inset-0"
           style={{
@@ -221,7 +248,6 @@ export function Background() {
             willChange: reduce ? 'auto' : 'background-position',
           }}
         />
-        {/* Fade upward into the dark */}
         <div
           className="absolute inset-0"
           style={{
@@ -229,7 +255,6 @@ export function Background() {
               'linear-gradient(to top, rgba(5,7,15,0) 0%, rgba(5,7,15,0.85) 80%, rgba(5,7,15,1) 100%)',
           }}
         />
-        {/* Glowing horizon line */}
         <div
           className="absolute left-0 right-0"
           style={{
@@ -247,7 +272,7 @@ export function Background() {
         />
       </div>
 
-      {/* 6a. Card spotlight (soft darkening behind the play area for headline contrast) */}
+      {/* 6a. Card spotlight */}
       <div
         className="absolute inset-0"
         style={{
@@ -265,9 +290,11 @@ export function Background() {
         }}
       />
 
-      {/* 6c. Film grain / arcade scanline overlay */}
+      {/* 6c. Texture overlays. feTurbulence and overlay blend are expensive on
+          mobile GPUs and tend to cause continuous repaint glitches. Desktop
+          only. */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 hidden sm:block"
         style={{
           backgroundImage:
             "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.55'/></svg>\")",
@@ -276,7 +303,7 @@ export function Background() {
         }}
       />
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 hidden sm:block"
         style={{
           backgroundImage:
             'repeating-linear-gradient(180deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 3px)',
@@ -292,11 +319,13 @@ function AuroraBlob({
   name,
   duration,
   animate,
+  blur,
   style,
 }: {
   name: string;
   duration: string;
   animate: boolean;
+  blur: number;
   style: CSSProperties;
 }) {
   return (
@@ -304,7 +333,7 @@ function AuroraBlob({
       style={{
         position: 'absolute',
         borderRadius: '999px',
-        filter: 'blur(60px)',
+        filter: `blur(${blur}px)`,
         animationName: animate ? name : 'none',
         animationDuration: duration,
         animationTimingFunction: 'ease-in-out',
@@ -317,7 +346,6 @@ function AuroraBlob({
 }
 
 function WheelSilhouette() {
-  // Faint apple-wheel: outer ring, dashed inner ring, 12 alternating blue/red apple dots, center hub.
   const apples = Array.from({ length: 12 }, (_, i) => {
     const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
     return {
@@ -328,10 +356,8 @@ function WheelSilhouette() {
   });
   return (
     <svg viewBox="0 0 500 500" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
-      {/* outer rim */}
       <circle cx="250" cy="250" r="240" fill="none" stroke="#0052FF" strokeOpacity="0.6" strokeWidth="2" />
       <circle cx="250" cy="250" r="232" fill="none" stroke="#0052FF" strokeOpacity="0.25" strokeWidth="1" />
-      {/* dashed inner guide */}
       <circle
         cx="250"
         cy="250"
@@ -342,14 +368,12 @@ function WheelSilhouette() {
         strokeWidth="1"
         strokeDasharray="3 8"
       />
-      {/* apple dots */}
       {apples.map((a, i) => (
         <g key={i}>
           <circle cx={a.x} cy={a.y} r="18" fill={a.color} opacity="0.85" />
           <circle cx={a.x - 5} cy={a.y - 6} r="5" fill="#ffffff" opacity="0.35" />
         </g>
       ))}
-      {/* center hub */}
       <circle cx="250" cy="250" r="16" fill="#0a0a14" stroke="#0052FF" strokeWidth="2" />
       <circle cx="250" cy="250" r="5" fill="#0052FF" opacity="0.9" />
     </svg>

@@ -485,20 +485,23 @@ export function BaseshooterGame() {
 
   return (
     <div className="relative mx-auto w-full max-w-[420px]">
-      <div className="mb-3 flex items-center justify-between text-sm text-zinc-200">
-        <div className="flex items-center gap-3">
-          <motion.span
-            layout
-            className="rounded-full border border-[#0052FF]/30 bg-[#0052FF]/15 px-2.5 py-1 text-xs font-semibold text-[#9bbcff] shadow-[0_0_18px_-8px_rgba(0,82,255,0.7)]"
-          >
-            Mode {mode} · {MODES[mode].label}
-          </motion.span>
+      <div className="mb-3 flex min-w-0 items-center justify-between gap-2 text-xs text-zinc-200 sm:gap-3 sm:text-sm">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <span className="shrink-0 rounded-full border border-[#0052FF]/30 bg-[#0052FF]/15 px-2 py-0.5 text-[10px] font-semibold text-[#9bbcff] shadow-[0_0_18px_-8px_rgba(0,82,255,0.7)] sm:px-2.5 sm:py-1 sm:text-xs">
+            <span className="sm:hidden">M{mode}</span>
+            <span className="hidden sm:inline">Mode {mode} · {MODES[mode].label}</span>
+          </span>
           <KnifeRow total={MODES[mode].knives} remaining={hudKnives} reduce={!!reduce} />
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <div className="flex items-center gap-1">
-            <span className="text-xs uppercase tracking-wider text-zinc-400">Score</span>
-            <AnimatedNumber value={hudScore} className="font-mono text-base font-semibold text-white" />
+            <span className="hidden text-xs uppercase tracking-wider text-zinc-400 sm:inline">
+              Score
+            </span>
+            <AnimatedNumber
+              value={hudScore}
+              className="font-mono text-sm font-semibold text-white sm:text-base"
+            />
           </div>
           <MuteButton muted={muted} onToggle={() => setMuted((m) => !m)} reduce={!!reduce} />
         </div>
