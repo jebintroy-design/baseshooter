@@ -2,6 +2,9 @@ export const LEADERBOARD_ADDRESS = '0xa3cd7518a1b9dafc3fc044bda57b7e735bf75770' 
 export const LEADERBOARD_CHAIN_ID = 8453 as const;
 export const LEADERBOARD_DEPLOY_BLOCK = 46924916n;
 
+// Base builder code "bc_fag51tt5" as UTF-8 hex, appended to calldata for Base builder-rewards attribution.
+export const BUILDER_CODE_SUFFIX = '0x62635f6661673531747435' as const;
+
 export const leaderboardAbi = [
   {
     type: 'function',

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { LEADERBOARD_ADDRESS, LEADERBOARD_CHAIN_ID, leaderboardAbi } from '@/config/contract';
+import { BUILDER_CODE_SUFFIX, LEADERBOARD_ADDRESS, LEADERBOARD_CHAIN_ID, leaderboardAbi } from '@/config/contract';
 import { ConnectWallet } from './ConnectWallet';
 
 type Props = {
@@ -71,6 +71,7 @@ export function SubmitScore({ mode, score, knivesLanded, won }: Props) {
       functionName: 'submitScore',
       args: [mode, score, knivesLanded, won],
       chainId: LEADERBOARD_CHAIN_ID,
+      dataSuffix: BUILDER_CODE_SUFFIX,
     });
   };
 

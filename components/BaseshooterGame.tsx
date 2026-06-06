@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAccount, useWriteContract } from 'wagmi';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import confetti from 'canvas-confetti';
-import { LEADERBOARD_ADDRESS, LEADERBOARD_CHAIN_ID, leaderboardAbi } from '@/config/contract';
+import { BUILDER_CODE_SUFFIX, LEADERBOARD_ADDRESS, LEADERBOARD_CHAIN_ID, leaderboardAbi } from '@/config/contract';
 import { ConnectWallet } from './ConnectWallet';
 import { SubmitScore } from './SubmitScore';
 import { AnimatedNumber } from './AnimatedNumber';
@@ -212,6 +212,7 @@ export function BaseshooterGame() {
           functionName: 'startGame',
           args: [m],
           chainId: LEADERBOARD_CHAIN_ID,
+          dataSuffix: BUILDER_CODE_SUFFIX,
         },
         {
           onSuccess: () => {
