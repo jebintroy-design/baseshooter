@@ -1,9 +1,14 @@
+import { Attribution } from 'ox/erc8021';
+
 export const LEADERBOARD_ADDRESS = '0xa3cd7518a1b9dafc3fc044bda57b7e735bf75770' as const;
 export const LEADERBOARD_CHAIN_ID = 8453 as const;
 export const LEADERBOARD_DEPLOY_BLOCK = 46924916n;
 
-// Base builder code "bc_fag51tt5" as UTF-8 hex, appended to calldata for Base builder-rewards attribution.
-export const BUILDER_CODE_SUFFIX = '0x62635f6661673531747435' as const;
+// Base builder-rewards attribution per https://docs.base.org/apps/builder-codes/app-developers.
+// ERC-8021 (canonical registry, schema 0) suffix appended to writeContract calldata so the
+// Base indexer can credit this app's builder code on every onchain action.
+export const BUILDER_CODE = 'bc_fag51tt5' as const;
+export const BUILDER_CODE_SUFFIX = Attribution.toDataSuffix({ codes: [BUILDER_CODE] });
 
 export const leaderboardAbi = [
   {
